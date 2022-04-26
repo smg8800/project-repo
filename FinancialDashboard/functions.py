@@ -1,4 +1,4 @@
-
+import pandas as pd
 
 # Helper to reformats date from ex. Jan 1 2000 to 01/01/2000
 def reformat_date(date):
@@ -36,3 +36,8 @@ def reformat_date(date):
         return "0" + str(num) + "/" + str(day) + "/" + str(year)
     else:
         return "0" + str(num) + "/0" + str(day) + "/" + str(year)
+
+
+
+def read_data(file):
+    return pd.read_csv(file)

@@ -3,7 +3,7 @@ USE options
 -- temporary SQL code that simply creates a table (or deletes, depending on whats commented out), 
 -- then selects everything from the table to display it
 
-
+-- creating table with all needed variables
 CREATE TABLE orders(
     OrderID varchar(255),
     BTOSTC varchar(255),
@@ -19,6 +19,7 @@ CREATE TABLE orders(
     FEES varchar(255)
 );
 
+-- delete table if needed
 --DROP TABLE orders;
 
 SELECT * FROM orders;
@@ -28,5 +29,5 @@ SELECT COUNT (TICK)
 FROM orders
 WHERE TICK = 'SPY';
 
-
+-- Copy and paste code from python program to create data table
 

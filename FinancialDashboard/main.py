@@ -2,15 +2,17 @@ from data_processing import *
 
 # driver code loops through each row of the input data
 def main(filename, outputname):
-    data = pd.read_csv(filename)
-    output = open(outputname, "a")
-    output.write("")
-    rows = len(data)
+    orders = read_data(filename)
+    rows = len(orders)
+    book = orderbook()
     for i in range(rows-1):
-        classify(data, output, i)
-    output.close()
-
-
+        new_order = create_order(orders, i)
+        book.add_order(new_order)
+    book.create_table_SQL_code(outputname)
+    all_trades = book.create_trades()
+    all_trades.total_PL()
+    all_trades.avg_winner()
+    all_trades.avg_loser()
 
 # run code
 
