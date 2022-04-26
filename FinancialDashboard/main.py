@@ -9,10 +9,13 @@ def main(filename, outputname):
         new_order = create_order(orders, i)
         book.add_order(new_order)
     book.create_table_SQL_code(outputname)
+
+    # process all_trades and print out interesting information
     all_trades = book.create_trades()
     all_trades.total_PL()
     all_trades.avg_winner()
     all_trades.avg_loser()
+    all_trades.writeToFile()
 
 # run code
 

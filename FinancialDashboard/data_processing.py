@@ -8,15 +8,18 @@ from functions import *
 class trades:
     all_trades = []
 
+    # add trade to list all_trades
     def add_trade(self, trade):
         self.all_trades.append(trade)
     
+    # computes overall PL
     def total_PL(self):
         PL = 0
         for trade in self.all_trades:
             PL += trade.PL
         print("Overall P/L: " + str(PL))
         
+    # computes average winning PL
     def avg_winner(self):
         q = 0
         sum = 0
@@ -26,6 +29,7 @@ class trades:
                 q += 1
         print("Average winner (" + str(q) + "): " + str(sum/q))
     
+    # computes average losing PL
     def avg_loser(self):
         q = 0
         sum = 0
@@ -34,6 +38,25 @@ class trades:
                 sum += trade.PL
                 q += 1
         print("Average loser (" + str(q) + "): " + str(sum/q))
+    
+    # writes all trades to a file 'trades.txt'
+    def writeToFile(self):
+        f = open("trades.txt", "w")
+        for trade in self.all_trades:
+            f.write("Trade " + str(trade.ID) + ", Ticker: " + trade.tick + ", Strike: " + str(trade.strike) + ", Quantity: " + str(trade.quant) +", Expiration: " + trade.exp + ", Acquired: " + trade.pdate + ", Sold: " + trade.sdate + ", Cost: " + str(trade.cbasis) + ", Proceeds: " + str(trade.proceeds) + ", PL: " + str(trade.PL) + "\n")
+        f.close()
+    
+    # ==== will adapt this code to create a table of trades instead of just orders ====
+    # def create_table_SQL_code(self, output):
+    #     f = open(output, "w")
+    #     for x in self.orders:
+    #         if x.bs == 'other':
+    #             values = "'" + str(x.ID) + "', 'other', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'"
+    #             f.write("INSERT INTO orders(OrderID, BTOSTC, TICK, OTYPE, STRIKE, EXP, PDATE, UCOST, QUANTITY, CBASIS, COMM, FEES) VALUES(" + values +");" + "\n")
+    #         else:
+    #             values = "'" + str(x.ID) + "', '" + x.bs + "', '" + x.tick + "', '" + x.type + "', '" + str(x.strike) + "', '" + x.exp + "', '" + x.tdate + "', '" + str(x.ucost) + "', '" + str(x.quant) + "', '" + str(x.cbasis) + "', '" + str(x.comm) + "', '" + str(x.fees) + "'"
+    #             f.write("INSERT INTO orders(OrderID, BTOSTC, TICK, OTYPE, STRIKE, EXP, PDATE, UCOST, QUANTITY, CBASIS, COMM, FEES) VALUES(" + values +");" + "\n")
+    #     f.close()
 
 class trade:
     def __init__(self, orders, i):
@@ -41,16 +64,20 @@ class trade:
         cost = 0
         proceeds = 0
         quant = 0
+        selldate = ""
+        buydate = ""
         for order in orders:
-            ## print(order.quant)
             if order.cbasis[0] == '-':
                 quant += int(order.quant)
-                cost += float(order.cbasis[1:])
-                print(cost)
-                self.pdate = order.tdate
+                cost += float(order.cbasis[1:])*100
+                buydate = order.tdate
             else:
-                proceeds += float(order.cbasis)
-                self.sdate = order.tdate
+                proceeds += float(order.cbasis)*100
+                selldate = order.tdate
+        if selldate == "":
+            selldate = "Expired"
+        self.sdate = selldate
+        self.pdate = buydate
         self.tick = orders[0].tick
         self.type = orders[0].type
         self.strike = orders[0].strike
@@ -58,9 +85,9 @@ class trade:
         self.quant = quant
         self.cbasis = cost
         self.proceeds = proceeds
-        self.comm = orders[0].comm
-        self.fees = orders[0].fees
-        self.PL = float(quant)*(float(proceeds) - (float(cost) + float(orders[0].comm) + float(orders[0].fees)))
+        self.comm = 2*0.65 * int(quant)
+        self.fees = 2*0.01 * int(quant)
+        self.PL = (float(proceeds) - (float(cost) + float(self.comm) + float(self.fees)))
 
 class order:
     def __init__(self, ID, bs, tick, type, strike, exp, tdate, ucost, quant, cbasis, comm, fees):
@@ -77,16 +104,17 @@ class order:
         self.comm = 0.65 * int(quant)
         self.fees = 0.01 * int(quant)
 
-    # currently refactoring 'classify' to an order creator and a SQL code creator, this creates the SQL table
 
-
+# parent class of order; stores all orders from the csv file.
 class orderbook:
-    orders = []
+    orders = [] # array of order object
     
     # add an order to the total list of orders
     def add_order(self, order):
         self.orders.append(order)
 
+    # writes SQL statements to a file which can be copied into a SQL editor and run to create a
+    # table of all orders in a database
     def create_table_SQL_code(self, output):
         f = open(output, "w")
         for x in self.orders:
@@ -96,9 +124,13 @@ class orderbook:
             else:
                 values = "'" + str(x.ID) + "', '" + x.bs + "', '" + x.tick + "', '" + x.type + "', '" + str(x.strike) + "', '" + x.exp + "', '" + x.tdate + "', '" + str(x.ucost) + "', '" + str(x.quant) + "', '" + str(x.cbasis) + "', '" + str(x.comm) + "', '" + str(x.fees) + "'"
                 f.write("INSERT INTO orders(OrderID, BTOSTC, TICK, OTYPE, STRIKE, EXP, PDATE, UCOST, QUANTITY, CBASIS, COMM, FEES) VALUES(" + values +");" + "\n")
+        f.close()
 
+
+    # Create_trades creates a trades object, then iterates through all of the orders twice,
+    # matching orders of the same position into one single trade. These trades are then added
+    # to the list of trades made, then the trades object is returned.
     def create_trades(self):
-
         seen = []
         i = 0
         all_trades = trades()
@@ -131,10 +163,9 @@ def create_order(data, i):
     description = data.loc[i][2]
     words = description.split()
     b_or_s = ""
-    print(i)
     if len(words) < 10:
         return order(i+1, 'other', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-        
+
     if words[0] == "Bought":
         b_or_s = "Buy To Open"
         unit_cost = "-"+words[9]
