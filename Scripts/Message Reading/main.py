@@ -1,12 +1,14 @@
 from messages import *
 from visualization import *
+import time
 
 
 def main():
+    # start = time.time()
     ourchat = 86.0
-    sean = user("Sean")
-    aidan = user("Aidan")
-    kody = user("Kody")
+    sean = user("Sean",1)
+    aidan = user("Aidan",0)
+    kody = user("Kody",0.25)
     users = [sean, aidan, kody]
 
 
@@ -14,9 +16,12 @@ def main():
     extract_activity(df_messages, ourchat, users)
 
     print_bar_chart(users)
+    print_multibar_chart(users)
 
-    print(sean.points)
-    print(aidan.points)
-    print(kody.points)
+    for usr in users:
+        print(usr.name + " has " + str(usr.points) + " points.")
+    
+    # end = time.time()-start
+    # print('Execution time in seconds: ' + str(end))
 
 main()
