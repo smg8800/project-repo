@@ -2,6 +2,7 @@
 #define SUDOKU_H_
 
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 #include <assert.h>
 
@@ -21,5 +22,7 @@ void print_sudoku(int sudoku[9][9]);
 void parse_sudoku(const char fpath[], int sudoku[9][9]);
 
 void write_sudoku(const char fpath[], int sudoku[9][9]);
+
+void process_csv(const char fpath[], const char outpath[]);
 
 #endif

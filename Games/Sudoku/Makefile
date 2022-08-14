@@ -7,6 +7,7 @@ sudoku: main.c sudoku.c
 clean:
 	rm *.o sudoku 
 	rm testboards/sudoku*_out.txt
+	rm Dataset/3m_out.txt
 
 ## Use 'make' followed by these options to automatically solve a given board
 sudoku1: sudoku
@@ -19,7 +20,9 @@ sudoku3: sudoku
 	./sudoku testboards/sudoku3.txt testboards/sudoku3_out.txt
 
 # make all
-all: sudoku
-	./sudoku testboards/sudoku1.txt testboards/sudoku1_out.txt
-	./sudoku testboards/sudoku2.txt testboards/sudoku2_out.txt
-	./sudoku testboards/sudoku3.txt testboards/sudoku3_out.txt
+# all: sudoku
+# 	./sudoku testboards/sudoku1.txt testboards/sudoku1_out.txt
+# 	./sudoku testboards/sudoku2.txt testboards/sudoku2_out.txt
+# 	./sudoku testboards/sudoku3.txt testboards/sudoku3_out.txt
+process: sudoku
+	./sudoku csv

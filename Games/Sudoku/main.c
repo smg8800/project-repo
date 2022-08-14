@@ -4,9 +4,14 @@ int main(int argc, char **argv) {
 
   int sudoku[9][9];
 
-  if(argc != 3) {
+  if (argc != 3) {
+    if (!strcmp(argv[1], "csv")) {
+      char path[] = "Dataset/sudoku-3m.csv";
+      char path2[] = "Dataset/3m_out.txt";
+      process_csv(path, path2);
+    }
     printf("To use program, type as: ./sudoku sudoku_instance.txt output_instance.txt\n");
-    printf("To build and run all files, type: make all\n");
+    // printf("To build and run all files, type: make all\n");
     return 0;
   }
 

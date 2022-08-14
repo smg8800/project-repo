@@ -17,6 +17,16 @@
 * The recursion continues until the base case, at which point the problem will be 
 * solved. Otherwise, if the number does not work, the cell is reset to 0 to prepare
 * to try a new number (backtracking).
+* To run this, type 'make' followed by sudokuN where N is 1-3, the provided puzzles.
+* To run a custom puzzle, create it in a text file like the provided and to solve it type
+* ./sudoku path_to_puzzle.txt output_path.txt
+* Additionally this program is able to process a file containing many sudoku puzzles.
+* The function process_csv() will open the file and read line by line, acquiring the
+* unsolved puzzle. This puzzle is parsed into a sudoku board and we proceed to call
+* solve_sudoku() on it, and also write to an output text file the puzzle before and
+* after being solved, with the puzzle number displayed.
+* The dataset of 3 million sudoku boards was downloaded from https://www.kaggle.com/datasets/radcliffe/3-million-sudoku-puzzles-with-ratings?resource=download.
+* To run this, type 'make process' into the terminal.
 */
 
 
@@ -137,6 +147,7 @@ void print_sudoku(int sudoku[9][9])
     }
     printf("\n");
   }
+  printf("\n");
 }
 
 // Read text file sudoku board
@@ -164,4 +175,70 @@ void write_sudoku(const char fpath[], int sudoku[9][9]) {
     fprintf(reader, "\n");
   }
   fclose(reader);
+}
+
+#define MAXCHAR 1000
+
+// collects information from input CSV file, solve all puzzles, and outputs the unsolved and solved puzzles to a text file
+void process_csv(const char fpath[], const char outpath[]) {
+  int num = 0;
+  FILE * reader = fopen(fpath, "r");
+  FILE *reader2 = fopen(outpath, "w");
+  assert(reader2 != NULL);
+  assert(reader != NULL);
+  char row[MAXCHAR];
+  int i = 0;
+  fgets(row, MAXCHAR, reader); // get first row that has column names
+
+  // get each line from file and process line
+  while (!feof(reader)) {
+    num++;
+    char *line;
+    fgets(row, MAXCHAR, reader);
+    int sudoku[9][9];
+    i = 0;
+    line = strtok(row, ","); // separates four parts of CSV file
+    char * temp;
+    char temp2;
+    while (line != NULL) {
+      if (i == 1) { // we have part of the line that contains the unsolved puzzle
+        for(int k =0; k<9; k++) {
+          for(int j=0; j<9; j++) {
+            temp = &line[k*9 + j];
+            temp2 =  temp[0];
+            sudoku[k][j] = atoi(&temp2); // placing input information into correct spot on board
+          }
+        }
+        break; // can break from current line ib while loop since we have already gotten all we need
+      }
+      line = strtok(NULL, ",");
+      i++;
+    }
+
+    // print sudoku board before and after solving into output text file
+    int i, j;
+    fprintf(reader2, "Puzzle no. %d\n", num);
+    for(i=0; i<9; i++) {
+      for(j=0; j<9; j++) {
+        fprintf(reader2, "%d ", sudoku[i][j]);
+      }
+      fprintf(reader2, "\n");
+    }
+    fprintf(reader2, "\n");
+
+    solve_sudoku(sudoku); // solve the puzzle
+
+    fprintf(reader2, "Solution: \n");
+    for(i=0; i<9; i++) {
+      for(j=0; j<9; j++) {
+        fprintf(reader2, "%d ", sudoku[i][j]);
+      }
+      fprintf(reader2, "\n");
+    }
+    fprintf(reader2, "\n\n\n");
+    // printf("Number processed: %d\n", num); // debug
+  }
+  // close files being read/written
+  fclose(reader);
+  fclose(reader2);
 }
