@@ -1,0 +1,2 @@
+Running part 1 gives an accuracy of .696
+Running part 2 gives an accuracy of 0.795
